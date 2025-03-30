@@ -141,7 +141,7 @@ def load_models(device: Optional[str] = None) -> Tuple[Dict, Dict]:
     model_info = defaultdict(dict)
 
     for name, path in [("original", qwen_original), ("tuned", qwen_tuned)]:
-        logging.info(f"\nLoading {name} model from {path}")
+        # logging.info(f"\nLoading {name} model from {path}")
 
         # Load native models and tokenizers
         model = AutoModelForCausalLM.from_pretrained(path)
@@ -167,7 +167,7 @@ def load_models(device: Optional[str] = None) -> Tuple[Dict, Dict]:
         )
 
         # Load HookedTransformer version
-        logging.info(f"Loading HookedTransformer for {name}")
+        # logging.info(f"Loading HookedTransformer for {name}")
         hooked_model = HookedTransformer.from_pretrained(
             path,
             config=cfg,

@@ -5,10 +5,26 @@
 # from transformer_utils.low_memory import disable_low_memory_load
 
 # disable_low_memory_load()
+import torch
+
+# # Check that MPS is available
+# if not torch.backends.mps.is_available():
+#     if not torch.backends.mps.is_built():
+#         print(
+#             "MPS not available because the current PyTorch install was not "
+#             "built with MPS enabled."
+#         )
+#     else:
+#         print(
+#             "MPS not available because the current MacOS version is not 12.3+ "
+#             "and/or you do not have an MPS-enabled device on this machine."
+#         )
+# mps_device = torch.device("mps")
 
 import transformers
 
-path = "deepseek-ai/DeepSeek-R1-Distill-Qwen-1.5B"
+# path = "deepseek-ai/DeepSeek-R1-Distill-Qwen-1.5B"
+path = "Qwen/Qwen2.5-Math-1.5B"
 
 model = transformers.AutoModelForCausalLM.from_pretrained(path).cuda()
 tokenizer = transformers.AutoTokenizer.from_pretrained(path)
@@ -16,23 +32,27 @@ tokenizer = transformers.AutoTokenizer.from_pretrained(path)
 import gc
 import torch
 
+
 def cleanup_model(model):
     try:
-      if hasattr(model, 'base_model_prefix') and len(model.base_model_prefix) > 0:
-        bm = getattr(model, model.base_model_prefix)
-        del bm
+        if hasattr(model, "base_model_prefix") and len(model.base_model_prefix) > 0:
+            bm = getattr(model, model.base_model_prefix)
+            del bm
     except:
-      pass
+        pass
     del model
 
     gc.collect()
-    torch.cuda.empty_cache()
+    # torch.cuda.empty_cache()
+
 
 import torch
+
 
 def text_to_input_ids(text):
     toks = tokenizer.encode(text)
     return torch.as_tensor(toks).view(1, -1).cuda()
+
 
 text = """Please reason step by step within <think> tags, and put your final answer within \boxed{}.
 
@@ -386,11 +406,40 @@ input_ids = text_to_input_ids(text)
 
 import transformer_utils.logit_lens
 import importlib
+
 importlib.reload(transformer_utils.logit_lens)
 from transformer_utils.logit_lens import plot_logit_lens
 
-# plot_logit_lens(model, tokenizer, input_ids, start_ix=135, end_ix=160, probs=True)
-# plot_logit_lens(model, tokenizer, input_ids, start_ix=1000, end_ix=1025, probs=True)
-plot_logit_lens(model, tokenizer, input_ids, start_ix=5000, end_ix=5025, probs=True)
+# for start in range(0, 5800, 25):
+#     plot_logit_lens(model, tokenizer, input_ids, start_ix=start, end_ix=start + 25, probs=True)
 
+print(path)
+# Mid-text, with occurrence of answer (728)
+start = 5265
+plot_logit_lens(
+    model, tokenizer, input_ids, start_ix=start, end_ix=start + 25, probs=True
+)
+
+# End of text
+start = 5805
+plot_logit_lens(
+    model, tokenizer, input_ids, start_ix=start, end_ix=start + 23, probs=True
+)
+# %%
+path = "deepseek-ai/DeepSeek-R1-Distill-Qwen-1.5B"
+print(path)
+# path = "Qwen/Qwen2.5-Math-1.5B"
+model = transformers.AutoModelForCausalLM.from_pretrained(path).cuda()
+
+# Mid-text, with occurrence of answer (728)
+start = 5265
+plot_logit_lens(
+    model, tokenizer, input_ids, start_ix=start, end_ix=start + 25, probs=True
+)
+
+# End of text
+start = 5805
+plot_logit_lens(
+    model, tokenizer, input_ids, start_ix=start, end_ix=start + 23, probs=True
+)
 # %%
